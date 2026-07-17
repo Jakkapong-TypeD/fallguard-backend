@@ -39,7 +39,9 @@ class FallDetector:
         self.mp_pose = mp.solutions.pose
         self.mp_drawing = mp.solutions.drawing_utils
         self.last_pose_landmarks = None
-
+      
+        self.current_posture = "unknown"
+        self.posture_confidence = 0.0
         self.pose = self.mp_pose.Pose(
             model_complexity=1,
             min_detection_confidence=0.5,
@@ -106,9 +108,10 @@ class FallDetector:
         now = time.time()
 
         if not results.pose_landmarks:
-            # ไม่เจอคนในเฟรม รีเซ็ตสถานะสงสัย
-            self.fall_suspect_since = None
-            return None
+          self.fall_suspect_since = None
+          self.current_posture = "unknown"
+          self.posture_confidence = 0.0
+          return None
 
         metrics = self._compute_metrics(results.pose_landmarks.landmark, frame_w, frame_h)
         if metrics is None:
@@ -124,12 +127,30 @@ class FallDetector:
                 vertical_speed = (y1 - y0) / (t1 - t0)
 
         is_horizontal_pose = (
-            metrics["aspect_ratio"] > self.aspect_ratio_threshold
-            and metrics["torso_angle"] < self.torso_angle_threshold
-        )
-        fell_fast = vertical_speed > self.vertical_speed_threshold
+    metrics["aspect_ratio"] > self.aspect_ratio_threshold
+    and metrics["torso_angle"] < self.torso_angle_threshold
+)
 
-        suspect_now = is_horizontal_pose or fell_fast
+fell_fast = vertical_speed > self.vertical_speed_threshold
+
+# จำแนกสถานะท่าทางแบบเบื้องต้น
+if fell_fast:
+    self.current_posture = "falling"
+    self.posture_confidence = 0.95
+
+elif is_horizontal_pose:
+    self.current_posture = "lying"
+    self.posture_confidence = 0.90
+
+elif metrics["torso_angle"] >= 65.0 and metrics["aspect_ratio"] < 0.75:
+    self.current_posture = "standing"
+    self.posture_confidence = 0.85
+
+else:
+    self.current_posture = "sitting"
+    self.posture_confidence = 0.75
+
+suspect_now = is_horizontal_pose or fell_fast
 
         if suspect_now:
             if self.fall_suspect_since is None:
