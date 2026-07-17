@@ -78,9 +78,6 @@ def main():
                 send_alert(event, DEVICE_ID)
 
             detector.draw_landmarks(frame)
-            
-            # แสดงผลสำหรับ debug (ปิดได้ถ้ารันบน server ไม่มีจอ)
-            detector.draw_landmarks(frame)
             cv2.imshow("Fall Detection - Simulated CCTV", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
