@@ -17,7 +17,7 @@ import cv2
 import requests
 from dotenv import load_dotenv
 
-from fall_detector import FallDetector
+from ai.fall_detector import FallDetector
 
 load_dotenv()
 
