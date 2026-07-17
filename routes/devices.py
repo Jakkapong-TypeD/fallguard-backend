@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException
+import os
+
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
+from firebase_admin import firestore
 
 from firebase_config import db
-
 router = APIRouter(prefix="/devices", tags=["devices"])
 
 
@@ -24,3 +26,11 @@ def register_device(req: RegisterDeviceRequest):
         "label": req.label,
     })
     return {"status": "device_registered", "device_id": req.device_id, "group_id": req.group_id}
+
+DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-secret-token")
+
+
+class DeviceStatusRequest(BaseModel):
+    device_id: str
+    posture: str
+    confidence: float
