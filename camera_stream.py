@@ -54,7 +54,32 @@ def send_alert(event, device_id: str):
         print(f"[ALERT SENT] status={resp.status_code} confidence={event.confidence}")
     except requests.RequestException as e:
         print(f"[ALERT FAILED] {e}")
+        
+def send_status(posture: str, confidence: float):
+    """ส่งสถานะท่าทางล่าสุดไป Backend"""
+    payload = {
+        "device_id": DEVICE_ID,
+        "posture": posture,
+        "confidence": confidence,
+    }
 
+    headers = {
+        "Authorization": f"Bearer {DEVICE_TOKEN}"
+    }
+
+    try:
+        resp = requests.post(
+            f"{BACKEND_URL}/devices/status",
+            json=payload,
+            headers=headers,
+            timeout=5,
+        )
+        print(
+            f"[STATUS SENT] status={resp.status_code} "
+            f"posture={posture} confidence={confidence}"
+        )
+    except requests.RequestException as e:
+        print(f"[STATUS FAILED] {e}")
 
 def main():
     cap = cv2.VideoCapture(CAMERA_SOURCE)
