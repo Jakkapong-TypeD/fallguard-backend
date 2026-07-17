@@ -42,4 +42,37 @@ def verify_device_token(authorization: str | None):
             detail="Device token ไม่ถูกต้อง",
         )
 
-ยังไม่ต้องเพิ่ม Endpoint นะ
+@router.post("/status")
+def update_device_status(
+    data: DeviceStatusRequest,
+    authorization: str | None = Header(default=None),
+):
+    verify_device_token(authorization)
+
+    device_doc = db.collection("devices").document(data.device_id).get()
+
+    if not device_doc.exists:
+        raise HTTPException(
+            status_code=404,
+            detail="ไม่พบอุปกรณ์นี้ในระบบ",
+        )
+
+    device_data = device_doc.to_dict() or {}
+    group_id = device_data.get("group_id")
+
+    db.collection("device_status").document(data.device_id).set(
+        {
+            "device_id": data.device_id,
+            "group_id": group_id,
+            "posture": data.posture,
+            "confidence": data.confidence,
+            "updated_at": firestore.SERVER_TIMESTAMP,
+        },
+        merge=True,
+    )
+
+    return {
+        "status": "updated",
+        "device_id": data.device_id,
+        "posture": data.posture,
+    }
