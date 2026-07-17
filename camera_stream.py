@@ -77,6 +77,8 @@ def main():
                 print(f"!! ตรวจพบการล้ม confidence={event.confidence} เวลา={event.timestamp}")
                 send_alert(event, DEVICE_ID)
 
+            detector.draw_landmarks(frame)
+            
             # แสดงผลสำหรับ debug (ปิดได้ถ้ารันบน server ไม่มีจอ)
             cv2.imshow("Fall Detection - Simulated CCTV", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
