@@ -30,13 +30,16 @@ class FallEvent:
 class FallDetector:
     def __init__(
         self,
-        aspect_ratio_threshold: float = 0.9,   # width/height > นี้ = ท่าทางแนวนอน
-        vertical_speed_threshold: float = 0.06,  # สัดส่วนความสูงเฟรม/เฟรม
-        torso_angle_threshold: float = 40.0,     # องศา เทียบแนวราบ
-        confirm_seconds: float = 3.0,            # ต้อง "ค้างอยู่ในท่าล้ม" กี่วินาทีถึงยืนยัน
+        aspect_ratio_threshold: float = 0.9,
+        vertical_speed_threshold: float = 0.06,
+        torso_angle_threshold: float = 40.0,
+        confirm_seconds: float = 3.0,
         history_len: int = 15,
     ):
         self.mp_pose = mp.solutions.pose
+        self.mp_drawing = mp.solutions.drawing_utils
+        self.last_pose_landmarks = None
+
         self.pose = self.mp_pose.Pose(
             model_complexity=1,
             min_detection_confidence=0.5,
