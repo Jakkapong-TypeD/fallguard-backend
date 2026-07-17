@@ -86,9 +86,11 @@ def main():
     if not cap.isOpened():
         raise RuntimeError(f"เปิดกล้องไม่ได้: {CAMERA_SOURCE}")
 
-    detector = FallDetector()
-    print(f"เริ่มตรวจจับ... device_id={DEVICE_ID}, source={CAMERA_SOURCE}")
+   detector = FallDetector()
+print(f"เริ่มตรวจจับ... device_id={DEVICE_ID}, source={CAMERA_SOURCE}")
 
+last_status_sent = 0.0
+    
     try:
         while True:
             ret, frame = cap.read()
