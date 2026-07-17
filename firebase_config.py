@@ -1,23 +1,30 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getMessaging } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+import os
+import json
+import firebase_admin
+from firebase_admin import credentials, firestore, messaging
 
-const firebaseConfig = {
-  apiKey: "AIzaSyALBqEc_ZKvXCoi51uhtYyIJhoi_4rpptc",
-  authDomain: "fallguard-family.firebaseapp.com",
-  projectId: "fallguard-family",
-  storageBucket: "fallguard-family.firebasestorage.app",
-  messagingSenderId: "543935846728",
-  appId: "1:543935846728:web:9bfe0c7e0e8da47f88bb7d"
-};
+firebase_creds_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT')
 
-export const VAPID_KEY = "BHsBwrPfVhdp7Pc0nVeNnqgA5CBTPxV0GpQOMYmNEef2qrapO2iq1TTWHBrjExLfRldoFdE67rp2HYpklKuFLHs";
-
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const messaging = getMessaging(app);
+if firebase_creds_json:
+    cred_dict = json.loads(firebase_creds_json)
+    _cred = credentials.Certificate(cred_dict)
+else:
+    _cred = credentials.Certificate("serviceAccountKey.json")
+firebase_app = firebase_admin.initialize_app(_cred)
+db = firestore.client()
 
 
-export const BACKEND_URL = "https://my-app-backend-xt03.onrender.com";
+def send_push_to_tokens(tokens: list[str], title: str, body: str, data: dict | None = None):
+    """ส่ง push notification ไปหลายเครื่องพร้อมกัน (สมาชิกในกลุ่มครอบครัว)"""
+    if not tokens:
+        return None
+    message = messaging.MulticastMessage(
+        notification=messaging.Notification(title=title, body=body),
+        data={k: str(v) for k, v in (data or {}).items()},
+        tokens=tokens,
+        android=messaging.AndroidConfig(priority="high"),
+        apns=messaging.APNSConfig(
+            payload=messaging.APNSPayload(aps=messaging.Aps(sound="default"))
+        ),
+    )
+    return messaging.send_multicast(message)
