@@ -21,7 +21,13 @@ from ai.fall_detector import FallDetector
 
 load_dotenv()
 
-CAMERA_SOURCE = os.getenv("CAMERA_SOURCE", 0)  # 0 = กล้องเครื่องแรกที่เจอ, หรือใส่ RTSP URL
+camera_source = os.getenv("CAMERA_SOURCE", "0")
+
+CAMERA_SOURCE = (
+    int(camera_source)
+    if camera_source.isdigit()
+    else camera_source
+)
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 DEVICE_ID = os.getenv("DEVICE_ID", "living-room-cam-01")
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-secret-token")  # ใช้ยืนยันตัวกล้องกับ backend
