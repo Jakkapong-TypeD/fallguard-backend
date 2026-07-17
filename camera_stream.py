@@ -28,7 +28,7 @@ CAMERA_SOURCE = (
     if camera_source.isdigit()
     else camera_source
 )
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+BACKEND_URL = os.getenv("BACKEND_URL", "https://my-app-backend-xt03.onrender.com")
 DEVICE_ID = os.getenv("DEVICE_ID", "living-room-cam-01")
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-secret-token")  # ใช้ยืนยันตัวกล้องกับ backend
 
