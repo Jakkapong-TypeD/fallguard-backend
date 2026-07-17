@@ -1,15 +1,3 @@
-"""
-camera_stream.py
------------------
-จำลองกล้องวงจรปิดในบ้าน โดยใช้กล้องของโน้ตบุ๊ก/2-in-1
-- ดึงภาพ real-time ด้วย OpenCV
-- ส่งแต่ละเฟรมเข้า FallDetector
-- ถ้าพบ FallEvent -> POST ไป backend endpoint /alerts/fall
-
-ภายหลังถ้าจะเปลี่ยนเป็นกล้องวงจรปิดจริง แค่เปลี่ยน CAMERA_SOURCE
-เป็น RTSP URL เช่น "rtsp://user:pass@192.168.1.50:554/stream1"
-"""
-
 import os
 import time
 import base64
@@ -83,43 +71,56 @@ def send_status(posture: str, confidence: float):
 
 def main():
     cap = cv2.VideoCapture(CAMERA_SOURCE)
+
     if not cap.isOpened():
         raise RuntimeError(f"เปิดกล้องไม่ได้: {CAMERA_SOURCE}")
 
-   detector = FallDetector()
-print(f"เริ่มตรวจจับ... device_id={DEVICE_ID}, source={CAMERA_SOURCE}")
+    detector = FallDetector()
+    print(f"เริ่มตรวจจับ... device_id={DEVICE_ID}, source={CAMERA_SOURCE}")
 
-last_status_sent = 0.0
-    
+    last_status_sent = 0.0
+
     try:
         while True:
             ret, frame = cap.read()
+
             if not ret:
                 print("อ่านเฟรมไม่ได้ ลองใหม่...")
                 time.sleep(0.5)
                 continue
 
             event = detector.process_frame(frame)
-            if event:
-                print(f"!! ตรวจพบการล้ม confidence={event.confidence} เวลา={event.timestamp}")
-                send_alert(event, DEVICE_ID)
-now = time.time()
 
-if now - last_status_sent >= 1.0:
-    send_status(
-        detector.current_posture,
-        detector.posture_confidence,
-    )
-    last_status_sent = now
+            if event:
+                print(
+                    f"!! ตรวจพบการล้ม "
+                    f"confidence={event.confidence} "
+                    f"เวลา={event.timestamp}"
+                )
+                send_alert(event, DEVICE_ID)
+
+            now = time.time()
+
+            if now - last_status_sent >= 1.0:
+                send_status(
+                    detector.current_posture,
+                    detector.posture_confidence,
+                )
+                last_status_sent = now
+
             detector.draw_landmarks(frame)
-            cv2.imshow("Fall Detection - Simulated CCTV", frame)
+
+            cv2.imshow(
+                "Fall Detection - Simulated CCTV",
+                frame,
+            )
+
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
+
     finally:
         cap.release()
         cv2.destroyAllWindows()
         detector.close()
-
-
 if __name__ == "__main__":
     main()
