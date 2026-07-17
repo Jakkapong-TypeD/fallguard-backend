@@ -103,7 +103,14 @@ last_status_sent = 0.0
             if event:
                 print(f"!! ตรวจพบการล้ม confidence={event.confidence} เวลา={event.timestamp}")
                 send_alert(event, DEVICE_ID)
+now = time.time()
 
+if now - last_status_sent >= 1.0:
+    send_status(
+        detector.current_posture,
+        detector.posture_confidence,
+    )
+    last_status_sent = now
             detector.draw_landmarks(frame)
             cv2.imshow("Fall Detection - Simulated CCTV", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
