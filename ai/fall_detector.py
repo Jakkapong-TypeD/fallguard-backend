@@ -102,7 +102,7 @@ class FallDetector:
         frame_h, frame_w = frame_bgr.shape[:2]
         frame_rgb = frame_bgr[:, :, ::-1]
         results = self.pose.process(frame_rgb)
-
+        self.last_pose_landmarks = results.pose_landmarks
         now = time.time()
 
         if not results.pose_landmarks:
@@ -144,6 +144,14 @@ class FallDetector:
             self.fall_suspect_since = None
 
         return None
-
+    def draw_landmarks(self, frame_bgr):
+      if self.last_pose_landmarks:
+        self.mp_drawing.draw_landmarks(
+            frame_bgr,
+            self.last_pose_landmarks,
+            self.mp_pose.POSE_CONNECTIONS,
+        )
+      return frame_bgr
+  
     def close(self):
         self.pose.close()
