@@ -34,3 +34,12 @@ class DeviceStatusRequest(BaseModel):
     device_id: str
     posture: str
     confidence: float
+
+def verify_device_token(authorization: str | None):
+    if authorization != f"Bearer {DEVICE_TOKEN}":
+        raise HTTPException(
+            status_code=401,
+            detail="Device token ไม่ถูกต้อง",
+        )
+
+ยังไม่ต้องเพิ่ม Endpoint นะ
